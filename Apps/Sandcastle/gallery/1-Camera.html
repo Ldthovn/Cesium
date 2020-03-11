@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1"> <!-- Use Chrome Frame in IE -->
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta name="description" content="A sample interior rendered with 3D Tiles.">
+    <meta name="cesium-sandcastle-labels" content="For_Me">
+    <title>Cesium Demo</title>
+    <script type="text/javascript" src="../Sandcastle-header.js"></script>
+    <script type="text/javascript" src="../../../Build/CesiumUnminified/Cesium.js" nomodule></script>
+    <script type="module" src="../load-cesium-es6.js"></script>
+</head>
+
+<body class="sandcastle-loading" data-sandcastle-bucket="bucket-requirejs.html">
+    <style>
+        @import url(../templates/bucket.css);
+    </style>
+    <div id="cesiumContainer" class="fullSize"></div>
+    <div id="loadingOverlay">
+        <h1>Loading...</h1>
+    </div>
+    <div id="toolbar">
+        <table class="infoPanel">
+            <tbody>
+                <tr>
+                    <td>Click on the Cesium display to start.</td>
+                </tr>
+                <tr>
+                    <td>w/s - move forward/backward</td>
+                </tr>
+                <tr>
+                    <td>a/d - move left/right</td>
+                </tr>
+                <tr>
+                    <td>q/e - move up/down</td>
+                </tr>
+                <tr>
+                    <td>left mouse button down plus mouse move changes the look direction</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script id="cesium_sandcastle_script">
+        function startup(Cesium) {
+            'use strict';
+            //Sandcastle_Begin
+            var viewer = new Cesium.Viewer('cesiumContainer');
+
+            var scene = viewer.scene;
+            var canvas = viewer.canvas;
+            canvas.setAttribute('tabindex', '0'); // needed to put focus on the canvas
+            canvas.onclick = function () {
+                canvas.focus();
+            };
+            var ellipsoid = scene.globe.ellipsoid;
+
+            var initialPosition = new Cesium.Cartesian3(-1111583.3721328347, -5855888.151574568, 2262561.444696748);
+            var initialOrientation = new Cesium.HeadingPitchRoll.fromDegrees(100.0, -15.0, 0.0);
+            console.log(initialOrientation);
+
+            viewer.scene.camera.setView({
+                destination: initialPosition,
+                orientation: initialOrientation,
+                endTransform: Cesium.Matrix4.IDENTITY
+            });
+
+            var flags = {
+                looking: false,
+                moveForward: false,
+                moveBackward: false,
+                moveUp: false,
+                moveDown: false,
+                moveLeft: false,
+                moveRight: false
+            };
+            function getFlagForKeyCode(keyCode) {
+                switch (keyCode) {
+                    case 'W'.charCodeAt(0):
+                        return 'moveForward';
+                    case 'S'.charCodeAt(0):
+                        return 'moveBackward';
+                    case 'Q'.charCodeAt(0):
+                        return 'moveUp';
+                    case 'E'.charCodeAt(0):
+                        return 'moveDown';
+                    case 'D'.charCodeAt(0):
+                        return 'moveRight';
+                    case 'A'.charCodeAt(0):
+                        return 'moveLeft';
+                    default:
+                        return undefined;
+                }
+            }
+
+            document.addEventListener('keydown', function (e) {
+                var flagName = getFlagForKeyCode(e.keyCode);
+                if (typeof flagName !== 'undefined') {
+                    flags[flagName] = true;
+                }
+            }, false);
+
+            document.addEventListener('keyup', function (e) {
+                var flagName = getFlagForKeyCode(e.keyCode);
+                if (typeof flagName !== 'undefined') {
+                    flags[flagName] = false;
+                }
+            }, false);
+
+            viewer.clock.onTick.addEventListener(function (clock) {
+                var camera = viewer.camera;
+
+                // Change movement speed based on the distance of the camera to the surface of the ellipsoid.
+                var cameraHeight = ellipsoid.cartesianToCartographic(camera.position).height;
+                var moveRate = cameraHeight / 100.0;
+
+                if (flags.moveForward) {
+                    camera.moveForward(moveRate);
+                }
+                if (flags.moveBackward) {
+                    camera.moveBackward(moveRate);
+                }
+                if (flags.moveUp) {
+                    camera.moveUp(moveRate);
+                }
+                if (flags.moveDown) {
+                    camera.moveDown(moveRate);
+                }
+                if (flags.moveLeft) {
+                    camera.moveLeft(moveRate);
+                }
+                if (flags.moveRight) {
+                    camera.moveRight(moveRate);
+                }
+            });
+            //Sandcastle_End
+            Sandcastle.finishedLoading();
+        }
+        if (typeof Cesium !== 'undefined') {
+            window.startupCalled = true;
+            startup(Cesium);
+        }
+    </script>
+</body>
+
+</html>

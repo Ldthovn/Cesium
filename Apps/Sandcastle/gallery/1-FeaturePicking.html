@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  ​
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1" />
+    <!-- Use Chrome Frame in IE -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <meta
+      name="description"
+      content="Adjust the height of a 3D Tiles tileset."
+    />
+    <meta name="cesium-sandcastle-labels" content="For_Me" />
+    <title>Cesium Demo</title>
+    <script type="text/javascript" src="../Sandcastle-header.js"></script>
+    <script
+      type="text/javascript"
+      src="../../../Build/CesiumUnminified/Cesium.js"
+      nomodule
+    ></script>
+    <script type="module" src="../load-cesium-es6.js"></script>
+  </head>
+  ​
+  <body
+    class="sandcastle-loading"
+    data-sandcastle-bucket="bucket-requirejs.html"
+  >
+    <style>
+      @import url(../templates/bucket.css);
+    </style>
+    <div id="cesiumContainer" class="fullSize"></div>
+    <div id="loadingOverlay">
+      <h1>Loading...</h1>
+    </div>
+    ​
+    <script id="cesium_sandcastle_script">
+      function startup(Cesium) {
+        "use strict";
+        //Sandcastle_Begin
+        var viewer = new Cesium.Viewer("cesiumContainer");
+        function model() {
+          // Load the tileset
+          var tileset = viewer.scene.primitives.add(
+            new Cesium.Cesium3DTileset({
+              url: "../../SampleData/Cesium3DTiles/tiles/tile2/tileset.json"
+            })
+          );
+          viewer.zoomTo(tileset).otherwise(function(error) {
+            console.log(error);
+          });
+
+          var silhouetteGreen = Cesium.PostProcessStageLibrary.createEdgeDetectionStage();
+          silhouetteGreen.uniforms.color = Cesium.Color.LIME;
+          silhouetteGreen.uniforms.length = 0.01;
+          silhouetteGreen.selected = [];
+
+          viewer.scene.postProcessStages.add(
+            Cesium.PostProcessStageLibrary.createSilhouetteStage([
+              silhouetteGreen
+            ])
+          );
+
+          viewer.screenSpaceEventHandler.setInputAction(function onLeftClick(
+            movement
+          ) {
+            silhouetteGreen.selected = [];
+
+            var pickedFeature = viewer.scene.pick(movement.position);
+
+            if (silhouetteGreen.selected[0] === pickedFeature) {
+              silhouetteGreen.selected = [];
+              return;
+            }
+            silhouetteGreen.selected = [pickedFeature];
+          },
+          Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        }
+        model();
+        //Sandcastle_End
+        Sandcastle.finishedLoading();
+      }
+      if (typeof Cesium !== "undefined") {
+        window.startupCalled = true;
+        startup(Cesium);
+      }
+    </script>
+  </body>
+  ​
+</html>
