@@ -18,9 +18,9 @@ var gallery_demos = [
     img: "1-OrthographicFrustum.png"
   },
   {
-    name: "1-DrapDrop",
+    name: "1-DragDrop",
     isNew: false,
-    img: "1-DrapDrop.jpg"
+    img: "1-DragDrop.jpg"
   },
   {
     name: "1-Smooth",

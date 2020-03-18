@@ -1,350 +1,185 @@
-<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1" />
-    <!-- Use Chrome Frame in IE -->
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
     />
-    <meta
-      name="description"
-      content="Adjust the height of a 3D Tiles tileset."
-    />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#ffffff" />
     <meta name="cesium-sandcastle-labels" content="For_Me" />
-    <title>Cesium Demo</title>
-    <script type="text/javascript" src="../Sandcastle-header.js"></script>
+
+    <title>glTF Viewer - View glTF Models Online With Cesium</title>
     <script
-      type="text/javascript"
-      src="../../../Build/CesiumUnminified/Cesium.js"
-      nomodule
+      async=""
+      src="https://www.google-analytics.com/analytics.js"
     ></script>
-    <script type="module" src="../load-cesium-es6.js"></script>
-    <script type="text/javascript" src="./dist/sources.bundle.js"></script>
-  </head>
+    <script src="node_modules/cesium/Build/Cesium/Cesium.js"></script>
+    <script src="node_modules/dropzone/dist/min/dropzone.min.js"></script>
+    <link
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+      rel="stylesheet"
+      integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+      crossorigin="anonymous"
+    />
 
-  <body
-    class="sandcastle-loading"
-    data-sandcastle-bucket="bucket-requirejs.html"
-  >
-    <style>
-      @import url(../templates/bucket.css);
+    <style type="text/css">
+      @import url(node_modules/cesium/Build/Cesium/Widgets/widgets.css);
+      html,
+      body,
+      #cesiumContainer,
+      .cesium-viewer-cesiumWidgetContainer,
+      .cesium-widget,
+      #home {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+        font-family: Tahoma, sans-serif;
+      }
+      .cesium-widget-credits,
+      .cesium-viewer-bottom {
+        display: none;
+      }
+      #home {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        text-align: center;
+        padding-top: 16px;
+        position: relative;
+        top: -100px;
+      }
+      #home .dragndrop {
+        margin-top: 32px;
+        display: inline-block;
+        border-radius: 8px;
+        font-size: 2em;
+        padding: 32px;
+        border: 6px dashed #555;
+        color: #555;
+      }
+      #home .dragndrop * {
+        pointer-events: none;
+      }
+      #home .dragndrop:hover,
+      #home .dragndrop.dz-drag-hover {
+        cursor: pointer;
+        background-color: #eee;
+      }
+      #home .dragndrop i {
+        margin-top: 16px;
+      }
+      .dz-image,
+      .dz-details,
+      .dz-success-mark,
+      .dz-error-mark {
+        display: none;
+      }
+      .dz-error-message {
+        margin-top: 16px;
+        color: darkred;
+      }
+      #instructions {
+        font-size: 80%;
+        margin: 8px;
+        position: absolute;
+        z-index: 2;
+      }
+      #instructions .commands {
+        margin-top: 8px;
+        margin-left: 2px;
+      }
+      #credits {
+        background-color: #303336;
+        padding: 6px 8px;
+        position: absolute;
+        z-index: 2;
+        bottom: 0;
+        left: 0;
+        color: white;
+        font-size: 80%;
+      }
+      #credits a {
+        color: white;
+      }
     </style>
-    <div id="cesiumContainer" class="fullSize"></div>
-    <div id="loadingOverlay">
-      <h1>Loading...</h1>
+  </head>
+  <body>
+    <div id="home">
+      <div>
+        This is a
+        <a href="https://github.com/KhronosGroup/glTF" target="_blank">glTF</a>
+        viewer. It uses
+        <a href="https://cesiumjs.org" target="_blank">Cesium</a> for
+        rendering.<br />
+        Files are read via HTML5 File API, so it's fast. No uploads to a server.
+        It supports glTF 2.0.<br />
+      </div>
+      <div class="dragndrop dz-clickable">
+        <div>Drop a .gltf/.glb file or click to select one</div>
+        <i class="fa fa-upload fa-3x"></i>
+      </div>
     </div>
-    <script id="cesium_sandcastle_script">
-      function startup(Cesium) {
-        "use strict";
-        //Sandcastle_Begin
-        var viewer = new Cesium.Viewer("cesiumContainer", {
-          shadows: true,
-          timeline: false,
-          animation: false
-        });
+    <div id="cesiumContainer">
+      <div id="instructions">
+        <div class="title">Keyboard Commands:</div>
+        <div class="commands">
+          (F) Toggle local reference frame<br />
+          (B) Toggle bounding sphere<br />
+          (H) Toggle this help and credits<br />
+        </div>
+      </div>
+    </div>
+    <div id="credits">
+      Made with <i class="fa fa-heart"></i> and
+      <a href="https://cesiumjs.org" target="_blank">Cesium</a> by the folks at
+      <a
+        href="http://virtualgis.io/"
+        target="_blank"
+        title="3D pipes visualization"
+        >VirtualGIS</a
+      >. Fork this on
+      <a href="https://github.com/virtualgis/gltfviewer">GitHub</a>.
+    </div>
+    <script src="app.js"></script>
+    <input
+      type="file"
+      class="dz-hidden-input"
+      accept=".gltf,.glb"
+      style="visibility: hidden; position: absolute; top: 0px; left: 0px; height: 0px; width: 0px;"
+    />
 
-        var camera = viewer.camera;
-        var scene = viewer.scene;
-        var globe = scene.globe;
-        var ellipsoid = Cesium.Ellipsoid.WGS84;
-        var geodesic = new Cesium.EllipsoidGeodesic();
+    <script>
+      (function(i, s, o, g, r, a, m) {
+        i["GoogleAnalyticsObject"] = r;
+        (i[r] =
+          i[r] ||
+          function() {
+            (i[r].q = i[r].q || []).push(arguments);
+          }),
+          (i[r].l = 1 * new Date());
+        (a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]);
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m);
+      })(
+        window,
+        document,
+        "script",
+        "https://www.google-analytics.com/analytics.js",
+        "ga"
+      );
 
-        if (!scene.pickPositionSupported) {
-          window.alert("This browser does not support pickPosition.");
-        }
-
-        viewer.scene.globe.depthTestAgainstTerrain = true;
-
-        var tileset = new Cesium.Cesium3DTileset({
-          url: "../../SampleData/Cesium3DTiles/Tilesets/Tileset/tileset.json"
-          // url: "../../SampleData/Cesium3DTiles/tiles/tile2/tileset.json"
-        });
-
-        tileset.readyPromise
-          .then(function(tileset) {
-            viewer.scene.primitives.add(tileset);
-            viewer.zoomTo(
-              tileset,
-              new Cesium.HeadingPitchRange(
-                0.0,
-                -0.5,
-                tileset.boundingSphere.radius * 2.0
-              )
-            );
-
-            var boundingSphere = tileset.boundingSphere;
-            camera.viewBoundingSphere(
-              boundingSphere,
-              new Cesium.HeadingPitchRange(
-                0.5,
-                -0.2,
-                boundingSphere.radius * 4.0
-              )
-            );
-            camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
-          })
-          .otherwise(function(error) {
-            console.log(error);
-          });
-        tileset.allTilesLoaded.addEventListener(function() {
-          console.log("All tiles are loaded");
-        });
-
-        var points = scene.primitives.add(
-          new Cesium.PointPrimitiveCollection()
-        );
-        var point1, point2;
-        var point1GeoPosition, point2GeoPosition;
-        var polyline1, polyline2, polyline3;
-        var distanceLabel, verticalLabel, horizontalLabel;
-        var label = {
-          font: "14px monospace",
-          showBackground: true,
-          horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-          verticalOrigin: Cesium.VerticalOrigin.CENTER,
-          pixelOffset: new Cesium.Cartesian2(0, 0),
-          // eyeOffset: new Cesium.Cartesian3(0, 0, -50),
-          fillColor: Cesium.Color.WHITE,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY
-        };
-
-        function addDistanceLabel(point1, point2, height) {
-          point1.cartographic = ellipsoid.cartesianToCartographic(
-            point1.position
-          );
-          point2.cartographic = ellipsoid.cartesianToCartographic(
-            point2.position
-          );
-          point1.longitude = parseFloat(
-            Cesium.Math.toDegrees(point1.position.x)
-          );
-          point1.latitude = parseFloat(
-            Cesium.Math.toDegrees(point1.position.y)
-          );
-          point2.longitude = parseFloat(
-            Cesium.Math.toDegrees(point2.position.x)
-          );
-          point2.latitude = parseFloat(
-            Cesium.Math.toDegrees(point2.position.y)
-          );
-          label.text = getHorizontalDistanceString(point1, point2);
-          horizontalLabel = viewer.entities.add({
-            position: getMidpoint(point1, point2, point1GeoPosition.height),
-            label: label
-          });
-          label.text = getDistanceString(point1, point2);
-          distanceLabel = viewer.entities.add({
-            position: getMidpoint(point1, point2, height),
-            label: label
-          });
-          label.text = getVerticalDistanceString();
-          verticalLabel = viewer.entities.add({
-            position: getMidpoint(point2, point2, height),
-            label: label
-          });
-        }
-
-        function getHorizontalDistanceString(point1, point2) {
-          geodesic.setEndPoints(point1.cartographic, point2.cartographic);
-          var meters = geodesic.surfaceDistance.toFixed(2);
-          if (meters >= 1000) {
-            return (meters / 1000).toFixed(1) + " км";
-          }
-          return meters + " м";
-        }
-
-        function getVerticalDistanceString() {
-          var heights = [point1GeoPosition.height, point2GeoPosition.height];
-          var meters =
-            Math.max.apply(Math, heights) - Math.min.apply(Math, heights);
-          if (meters >= 1000) {
-            return (meters / 1000).toFixed(1) + " км";
-          }
-          return meters.toFixed(2) + " м";
-        }
-
-        function getDistanceString(point1, point2) {
-          geodesic.setEndPoints(point1.cartographic, point2.cartographic);
-          var horizontalMeters = geodesic.surfaceDistance.toFixed(2);
-          var heights = [point1GeoPosition.height, point2GeoPosition.height];
-          var verticalMeters =
-            Math.max.apply(Math, heights) - Math.min.apply(Math, heights);
-          var meters = Math.pow(
-            Math.pow(horizontalMeters, 2) + Math.pow(verticalMeters, 2),
-            0.5
-          );
-
-          if (meters >= 1000) {
-            return (meters / 1000).toFixed(1) + " км";
-          }
-          return meters.toFixed(2) + " м";
-        }
-
-        // 0.5 center text
-        function getMidpoint(point1, point2, height) {
-          var scratch = new Cesium.Cartographic();
-          geodesic.setEndPoints(point1.cartographic, point2.cartographic);
-          var midpointCartographic = geodesic.interpolateUsingFraction(
-            0.5,
-            scratch
-          );
-          return Cesium.Cartesian3.fromRadians(
-            midpointCartographic.longitude,
-            midpointCartographic.latitude,
-            height
-          );
-        }
-
-        // Mouse over the globe to see the cartographic position
-        var handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
-
-        handler.setInputAction(function(click) {
-          if (scene.mode !== Cesium.SceneMode.MORPHING) {
-            var pickedObject = scene.pick(click.position);
-            if (scene.pickPositionSupported && Cesium.defined(pickedObject)) {
-              var cartesian = viewer.scene.pickPosition(click.position);
-              // console.log(cartesian);
-              if (Cesium.defined(cartesian)) {
-                if (points.length === 2) {
-                  points.removeAll();
-                  viewer.entities.remove(distanceLabel);
-                  viewer.entities.remove(horizontalLabel);
-                  viewer.entities.remove(verticalLabel);
-                }
-                //add first point
-                if (points.length === 0) {
-                  point1 = points.add({
-                    position: new Cesium.Cartesian3(
-                      cartesian.x,
-                      cartesian.y,
-                      cartesian.z
-                    ),
-                    color: Cesium.Color.BLUE
-                  });
-                } //add second point and lines
-                else if (points.length === 1) {
-                  point2 = points.add({
-                    position: new Cesium.Cartesian3(
-                      cartesian.x,
-                      cartesian.y,
-                      cartesian.z
-                    ),
-                    color: Cesium.Color.BLUE
-                  });
-                  point1GeoPosition = Cesium.Cartographic.fromCartesian(
-                    point1.position
-                  );
-                  point2GeoPosition = Cesium.Cartographic.fromCartesian(
-                    point2.position
-                  );
-
-                  var pl1Positions = [
-                    new Cesium.Cartesian3.fromRadians(
-                      point1GeoPosition.longitude,
-                      point1GeoPosition.latitude,
-                      point1GeoPosition.height
-                    ),
-                    new Cesium.Cartesian3.fromRadians(
-                      point2GeoPosition.longitude,
-                      point2GeoPosition.latitude,
-                      point2GeoPosition.height
-                    )
-                  ];
-                  var pl2Positions = [
-                    new Cesium.Cartesian3.fromRadians(
-                      point2GeoPosition.longitude,
-                      point2GeoPosition.latitude,
-                      point2GeoPosition.height
-                    ),
-                    new Cesium.Cartesian3.fromRadians(
-                      point2GeoPosition.longitude,
-                      point2GeoPosition.latitude,
-                      point1GeoPosition.height
-                    )
-                  ];
-                  var pl3Positions = [
-                    new Cesium.Cartesian3.fromRadians(
-                      point1GeoPosition.longitude,
-                      point1GeoPosition.latitude,
-                      point1GeoPosition.height
-                    ),
-                    new Cesium.Cartesian3.fromRadians(
-                      point2GeoPosition.longitude,
-                      point2GeoPosition.latitude,
-                      point1GeoPosition.height
-                    )
-                  ];
-
-                  viewer.entities.add({
-                    polyline: {
-                      positions: pl1Positions,
-                      width: 1,
-                      material: new Cesium.GridMaterialProperty({
-                        color: Cesium.Color.YELLOW
-                      }),
-                      depthFailMaterial: new Cesium.GridMaterialProperty({
-                        color: Cesium.Color.RED
-                      })
-                    }
-                  });
-                  viewer.entities.add({
-                    polyline: {
-                      positions: pl2Positions,
-                      width: 1,
-                      material: new Cesium.PolylineOutlineMaterialProperty({
-                        color: Cesium.Color.YELLOW
-                      }),
-                      depthFailMaterial: new Cesium.PolylineOutlineMaterialProperty(
-                        {
-                          color: Cesium.Color.RED
-                        }
-                      )
-                    }
-                  });
-                  viewer.entities.add({
-                    polyline: {
-                      positions: pl3Positions,
-                      width: 1,
-                      material: new Cesium.PolylineOutlineMaterialProperty({
-                        color: Cesium.Color.YELLOW
-                      }),
-                      depthFailMaterial: new Cesium.PolylineOutlineMaterialProperty(
-                        {
-                          color: Cesium.Color.RED
-                        }
-                      )
-                    }
-                  });
-                  var labelZ;
-                  if (point2GeoPosition.height >= point1GeoPosition.height) {
-                    labelZ =
-                      point1GeoPosition.height +
-                      (point2GeoPosition.height - point1GeoPosition.height) /
-                        2.0;
-                  } else {
-                    labelZ =
-                      point2GeoPosition.height +
-                      (point1GeoPosition.height - point2GeoPosition.height) /
-                        2.0;
-                  }
-
-                  addDistanceLabel(point1, point2, labelZ);
-                }
-              }
-            }
-          }
-        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
-        viewer.zoomTo(viewer.entities);
-
-        //Sandcastle_End
-        Sandcastle.finishedLoading();
-      }
-      if (typeof Cesium !== "undefined") {
-        window.startupCalled = true;
-        startup(Cesium);
-      }
+      ga("create", "UA-49227119-6", "auto");
+      ga("send", "pageview");
     </script>
   </body>
 </html>

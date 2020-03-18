@@ -43,9 +43,25 @@
         // Add basic drag and drop support and pop up an alert window on error.
         var viewer = new Cesium.Viewer("cesiumContainer");
         viewer.extend(Cesium.viewerDragDropMixin);
+
         viewer.dropError.addEventListener(function(viewerArg, source, error) {
           window.alert("Error processing " + source + ":" + error);
         });
+
+        viewer.dataSources.dataSourceAdded.addEventListener(function(
+          collection,
+          dataSource
+        ) {
+          var entities = dataSource.entities.values;
+          for (var i = 0; i < entities.length; i++) {
+            var entity = entities[i];
+            console.log(entity.billboard);
+            if (entity.billboard) {
+              entity.billboard.color = Cesium.Color.RED;
+            }
+          }
+        });
+
         //Sandcastle_End
         Sandcastle.finishedLoading();
       }
